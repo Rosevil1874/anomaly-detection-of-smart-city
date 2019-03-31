@@ -39,7 +39,9 @@ def split_by_neighbor( o_path, d_path):
 	# 按地址划分
 	groups = df.groupby(df['neighbor'])
 	for group in groups:
-		group[1].to_csv(d_path + str(group[0]).strip() + '.csv', index=False, encoding='utf-8')
+		result = group[1].iloc[::-1]		# 日期本来是反的，将其反转成正序
+		file_path = d_path + str(group[0]).strip() + '.csv'
+		result.to_csv(file_path, index=False, encoding='utf-8')
 
 
 # 读取原始文件并按地址划分为单独的文件
@@ -57,7 +59,8 @@ def split_by_address( neighbor, o_path, d_path):
 		os.makedirs(new_path)
 	groups = df.groupby(df['address'])
 	for group in groups:
-		group[1].to_csv(new_path + str(group[0]).strip() + '.csv', index=False, encoding='utf-8')
+		file_path = new_path + str(group[0]).strip() + '.csv'
+		group[1].to_csv(file_path, index=False, encoding='utf-8')
 
 
 # 删除同一设备在15秒内同一状态的数据
@@ -98,8 +101,10 @@ def data_supplement(address, unit, o_path, d_path):
 	path = o_path + unit + '/' + address
 	o = open(path, 'rb')
 	df = pd.read_csv(o, parse_dates=['received_time'], date_parser = dateparse2)
+	df_insert = pd.DataFrame(columns = ['address','device_id','neighbor','received_time','status'])
 	address_name = address.split('.')[0]
-	df_insert = pd.DataFrame(columns = ['address','status','received_time'])
+	device_id = df.loc[0]['device_id']
+	neighbor = df.loc[0]['neighbor']
 	idx = 0			# 控制原df的遍历
 
 	# 检查报警前无“正常开门”和缺少“报警解除”状态的情况并补充
@@ -107,7 +112,8 @@ def data_supplement(address, unit, o_path, d_path):
 		if df.loc[idx]['status'] == 6 and idx != 0:			# “超时未关门报警”
 			if df.loc[idx - 1]['status'] != 4:	# 若超时的前一个状态不是“正常开门”状态，在超时前5分钟插入一个正常开门状态
 				time = df.loc[idx]['received_time'] - timedelta(minutes = 5)
-				df_insert.loc[0] = {'address': address_name,'status': 4,'received_time': pd.datetime.strftime(time,'%Y-%m-%d %H:%M:%S')}
+				df_insert.loc[0] = {'address': address_name,'device_id':device_id,'neighbor':neighbor,
+									'received_time': pd.datetime.strftime(time,'%Y-%m-%d %H:%M:%S'),'status': 4}
 				df = pd.concat([df[:idx], df_insert, df[idx:]], axis = 0)
 				df = df.reset_index(drop = True)		# 重置索引
 				idx += 1
@@ -120,7 +126,8 @@ def data_supplement(address, unit, o_path, d_path):
 					break
 				else:							# 不是“开门状态”也不是“报警解除”，说明未上报“报警解除”状态，在上一个状态（超时/开门状态）后5分钟补充上“报警解除”
 					time = df.loc[j-1]['received_time'] + timedelta(minutes = 5)
-					df_insert.loc[0] = {'address': address_name,'status': 7,'received_time': pd.datetime.strftime(time,'%Y-%m-%d %H:%M:%S')}
+					df_insert.loc[0] = {'address': address_name, 'device_id': device_id, 'neighbor': neighbor,
+										'received_time': pd.datetime.strftime(time, '%Y-%m-%d %H:%M:%S'), 'status': 7}
 					df = pd.concat([df[:j], df_insert, df[j:]], axis = 0)
 					df = df.reset_index(drop = True)		# 重置索引
 					idx = j + 2
@@ -138,7 +145,8 @@ def data_supplement(address, unit, o_path, d_path):
 		if df.loc[idx]['status'] == 7:			# “报警解除”
 			if idx == 0:						# 第一个状态就是解除，则在其前5分钟加上超时状态
 				time = df.loc[idx]['received_time'] - timedelta(minutes = 5)
-				df_insert.loc[0] = {'address': address_name,'status': 6,'received_time': pd.datetime.strftime(time,'%Y-%m-%d %H:%M:%S')}
+				df_insert.loc[0] = {'address': address_name, 'device_id': device_id, 'neighbor': neighbor,
+									'received_time': pd.datetime.strftime(time, '%Y-%m-%d %H:%M:%S'), 'status': 6}
 				df = pd.concat([df_insert, df], axis = 0)
 				df = df.reset_index(drop = True)		# 重置索引
 				idx = idx + 1
@@ -151,7 +159,9 @@ def data_supplement(address, unit, o_path, d_path):
 						break
 					elif df.loc[j]['status'] == 4:	# 未出现“超时未关门报警”即向前找到了“正常开门”状态“，在正常开门后5分钟加上”超时未关门报警“状态
 						time = df.loc[j]['received_time'] + timedelta(minutes = 5)
-						df_insert.loc[0] = {'address': address_name,'status': 6,'received_time': pd.datetime.strftime(time,'%Y-%m-%d %H:%M:%S')}
+						df_insert.loc[0] = {'address': address_name, 'device_id': device_id, 'neighbor': neighbor,
+											'received_time': pd.datetime.strftime(time, '%Y-%m-%d %H:%M:%S'),
+											'status': 6}
 						df = pd.concat([df[:j+1], df_insert, df[j+1:]], axis = 0)
 						df = df.reset_index(drop = True)		# 重置索引
 						idx = idx + 1
@@ -159,8 +169,12 @@ def data_supplement(address, unit, o_path, d_path):
 					else:							# 不是前3种情况，说明未上报“超时未关门报警”和其前的“正常开门”状态，在此状态后1分钟补充上“正常开门”，后6分钟补充“超时未关门报警”
 						time_normal = df.loc[j]['received_time'] + timedelta(minutes = 1)
 						time = df.loc[j]['received_time'] + timedelta(minutes = 6)
-						df_insert.loc[0] = {'address': address_name,'status': 4,'received_time': pd.datetime.strftime(time,'%Y-%m-%d %H:%M:%S')}
-						df_insert.loc[1] = {'address': address_name,'status': 6,'received_time': pd.datetime.strftime(time_normal,'%Y-%m-%d %H:%M:%S')}
+						df_insert.loc[0] = {'address': address_name, 'device_id': device_id, 'neighbor': neighbor,
+											'received_time': pd.datetime.strftime(time, '%Y-%m-%d %H:%M:%S'),
+											'status': 4}
+						df_insert.loc[1] = {'address': address_name, 'device_id': device_id, 'neighbor': neighbor,
+											'received_time': pd.datetime.strftime(time_normal, '%Y-%m-%d %H:%M:%S'),
+											'status': 6}
 						df = pd.concat([df[:j+1], df_insert, df[j+1:]], axis = 0)
 						df = df.reset_index(drop = True)		# 重置索引
 						idx = idx + 1
