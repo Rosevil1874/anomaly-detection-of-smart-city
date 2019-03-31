@@ -46,7 +46,7 @@ from preprocess import gather_data, split_by_neighbor, split_by_address, delete_
 #     os.makedirs(d_path)
 # split_by_neighbor( o_path, d_path )
 # print('splited by neighbor')
-#
+
 # o_path = '../dataset/neighbors_units/'
 # d_path = '../dataset/units/'
 # if not os.path.exists(d_path):
@@ -76,6 +76,7 @@ from preprocess import gather_data, split_by_neighbor, split_by_address, delete_
 #     for address in addresses:
 #         data_supplement(address, unit, o_path, d_path)
 # print('supplement')
+# data_supplement('武威东路479弄12号.csv', 'N', o_path, d_path)
 
 # ------------------------------------------------ 2. 状态计算  ---------------------------------------------------
 # 1. 计算单元设备每小时/每日开门次数
@@ -89,7 +90,7 @@ from preprocess import gather_data, split_by_neighbor, split_by_address, delete_
 from counters import rooms_open_counter, delete_little_open, open_frequency_peer_hour,open_frequency_peer_day,\
     split_by_day, split_by_week,total_open_condition,open_to_close_time, spring_festival_open
 
-# # 1. 计算单元设备每日开门次数
+# 1. 计算单元设备每日开门次数,这个功能还没有试！！！！！！！！！！！！！！！！！！！！！！！
 # o_path = '../dataset/complete_units/'
 # d_path = '../counts/1day_origin/'
 # units = os.listdir(o_path)
@@ -98,7 +99,6 @@ from counters import rooms_open_counter, delete_little_open, open_frequency_peer
 #     for address in addresses:
 #         rooms_open_counter(address, unit, o_path, d_path)
 # print('rooms_open_counted')
-
 # 这个功能还没有试！！！！！！！！！！！！！！！！！！！！！！！
 # 将超过5天开门次数为0的设备剔除保存
 # o_path = '../counts/1day_origin/'
@@ -116,8 +116,8 @@ from counters import rooms_open_counter, delete_little_open, open_frequency_peer
 #             shutil.copy(o_path + unit + '/' + address, d_path+ unit + '/' + address)
 # print('delete_little_open')
 #
-# # 2. 计算单元设备每小时开门次数，并将超过5天开门次数为0的设备剔除保存#
-# o_path = '../dataset/complete_units/'
+# 2. 计算单元设备每小时开门次数，并将超过5天开门次数为0的设备剔除保存#
+# o_path = '../dataset/redundancy_deleted/'
 # d_path_day = '../counts/1day/'
 # d_path_hour = '../counts/1hour/'
 # units = os.listdir(o_path)
@@ -128,8 +128,8 @@ from counters import rooms_open_counter, delete_little_open, open_frequency_peer
 #     for address in addresses:
 #         rooms_open_counter(address, unit, o_path, d_path_hour)
 # print('rooms_open_counted')
-
-# 3. 计算每个设备每个小时正常开门的总次数并转化为CSV文件（0时到1时之间的算作1时，以此类推）
+#
+# # 3. 计算每个设备每个小时正常开门的总次数并转化为CSV文件（0时到1时之间的算作1时，以此类推）
 # o_path = '../counts/1hour/'
 # d_path = '../counts/peer_hour/'
 # units = os.listdir(o_path)
@@ -260,15 +260,45 @@ from statistical import model
 
 # ------------------------------------------------ 5. 聚类分析  ----------------------------------------------------
 # 画出层次聚类树状图，输出聚类结果，画出每一类的设备表现图
-from cluster import cluster
+from cluster import cluster, plt_cluster, clusters_counts_daily, clusters_counts_weekly
 # from cluster1 import cluster1
 
-o_path = '../counts/total_open_condition.csv' 	#开门不同时段
-d_path = '../clusters/'
-if not os.path.exists(d_path):
-    os.makedirs(d_path)
-cluster(o_path, d_path)
+# 聚类
+# o_path = '../counts/total_open_condition.csv' 	#开门不同时段
+# d_path = '../clusters/'
+# if not os.path.exists(d_path):
+#     os.makedirs(d_path)
+# plt_cluster(o_path, d_path)
+# cluster(10, o_path, d_path)
 
+
+# 根据聚类结果聚合各类别中的小区数据
+# o_path = '../clusters/csv/'
+# o_path_weekly = '../counts/peer_day/'
+# o_path_daily = '../counts/peer_hour/'
+# d_path_weekly = '../clusters/weekly_count/'
+# d_path_daily = '../clusters/daily_count/'
+# if not os.path.exists(d_path_weekly):
+#     os.makedirs(d_path_weekly)
+# if not os.path.exists(d_path_daily):
+#     os.makedirs(d_path_daily)
+# types = os.listdir(o_path)
+# for type in types:
+#     clusters_counts_daily(type, o_path, o_path_daily, d_path_daily)
+#     clusters_counts_weekly(type, o_path, o_path_weekly, d_path_weekly)
+
+
+# 根据聚类结果画出每种结果的均值标准差模型图
+# o_path_weekly = '../clusters/weekly_count/'
+# o_path_daily = '../clusters/daily_count/'
+# d_path_weekly = '../clusters/statistical_model/weekly/'
+# d_path_workday = '../clusters/statistical_model/daily_workday/'
+# d_path_weekend = '../clusters/statistical_model/daily_weekend/'
+# types = os.listdir(o_path_weekly)
+# for type in types:
+#     model(type, '', o_path_weekly, d_path_weekly)
+#     model(type, '', o_path_daily, d_path_workday)
+#     model(type, '', o_path_daily, d_path_weekend)
 # ------------------------------------------------ 6. 异常检测  ---------------------------------------------------
 from LSTM import lstm, hourly_anomaly_corr_rate
 

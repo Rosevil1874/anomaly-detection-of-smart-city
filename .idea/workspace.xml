@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9731f2c9-1686-4a51-b7d7-d50ed4d7ef32" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/anomaly-detection-of-smart-city.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/FFT.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/LSTM.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/LSTM_class.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/auto_encoder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/cluster.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/cluster1.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/counters.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/dateparsers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/plt_analysis.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/preprocess.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/statistical.py" afterDir="false" />
+    <list default="true" id="9731f2c9-1686-4a51-b7d7-d50ed4d7ef32" name="Default Changelist" comment="全区">
+      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/166弄数据测试/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/166弄数据测试/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/全区10天数据测试/LSTM.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/LSTM.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/全区10天数据测试/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/全区10天数据测试/cluster.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/cluster.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/全区10天数据测试/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/全区10天数据测试/statistical.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/statistical.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,32 +18,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="50">
-                <caret line="2" selection-start-line="2" selection-end-line="2" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/code/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="225">
-                <caret line="30" column="27" selection-start-line="30" selection-start-column="27" selection-end-line="30" selection-end-column="27" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -61,6 +27,8 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/code/README.md" />
+        <option value="$PROJECT_DIR$/166弄数据测试/README.md" />
+        <option value="$PROJECT_DIR$/全小区10天数据测试/README.md" />
       </list>
     </option>
   </component>
@@ -75,6 +43,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -85,18 +54,26 @@
             <path>
               <item name="anomaly-detection-of-smart-city" type="b2602c69:ProjectViewProjectNode" />
               <item name="anomaly-detection-of-smart-city" type="462c0819:PsiDirectoryNode" />
-              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="166弄数据测试" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="anomaly-detection-of-smart-city" type="b2602c69:ProjectViewProjectNode" />
+              <item name="anomaly-detection-of-smart-city" type="462c0819:PsiDirectoryNode" />
+              <item name="全区10天数据测试" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -122,12 +99,35 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1553950689165</updated>
-      <workItem from="1553950690467" duration="519000" />
+      <workItem from="1553950690467" duration="2275000" />
+      <workItem from="1554037725464" duration="328000" />
     </task>
+    <task id="LOCAL-00001" summary="166弄四个月数据进行各种功能测试。">
+      <created>1553951375405</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1553951375405</updated>
+    </task>
+    <task id="LOCAL-00002" summary="全区10天数据测试。">
+      <created>1553952355843</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1553952355843</updated>
+    </task>
+    <task id="LOCAL-00003" summary="1. 日期原本是反序的，将其反转成正序；&#10;2. 状态补充函数还有一定问题；&#10;3. 使用层次聚类将全区的小区分为10类，并根据聚类结果寻找各类别的均值标准差模型（类型9最后结果均为0应该是小区中为0的太多，求平均后整体被拉为0）；&#10;4. 加了一些代码注释。">
+      <created>1554038042514</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1554038042514</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="519000" />
+    <option name="totallyTimeSpent" value="2603000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -140,17 +140,10 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info id="Favorites" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20257235" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.30385852" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Database Changes" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Python Console" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
@@ -158,17 +151,70 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32977587" />
-      <window_info anchor="right" id="SciView" />
-      <window_info anchor="right" id="Database" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" weight="0.32977587" />
+      <window_info anchor="bottom" id="Database Changes" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Terminal" order="11" weight="0.32977587" />
+      <window_info anchor="bottom" id="Python Console" order="12" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="166弄四个月数据进行各种功能测试。" />
+    <MESSAGE value="全区10天数据测试。" />
+    <MESSAGE value="1. 日期原本是反序的，将其反转成正序；&#10;2. 状态补充函数还有一定问题；&#10;3. 使用层次聚类将全区的小区分为10类，并根据聚类结果寻找各类别的均值标准差模型（类型9最后结果均为0应该是小区中为0的太多，求平均后整体被拉为0）；&#10;4. 加了一些代码注释。" />
+    <option name="LAST_COMMIT_MESSAGE" value="1. 日期原本是反序的，将其反转成正序；&#10;2. 状态补充函数还有一定问题；&#10;3. 使用层次聚类将全区的小区分为10类，并根据聚类结果寻找各类别的均值标准差模型（类型9最后结果均为0应该是小区中为0的太多，求平均后整体被拉为0）；&#10;4. 加了一些代码注释。" />
+  </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/code/README.md" />
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -179,11 +225,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/README.md">
+    <entry file="file://$PROJECT_DIR$/全小区10天数据测试/README.md" />
+    <entry file="file://$PROJECT_DIR$/全小区10天数据测试/plt_analysis.py" />
+    <entry file="file://$PROJECT_DIR$/166弄数据测试/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="225">
-            <caret line="30" column="27" selection-start-line="30" selection-start-column="27" selection-end-line="30" selection-end-column="27" />
+          <first_editor relative-caret-position="281">
+            <caret line="47" column="9" lean-forward="true" selection-start-line="47" selection-start-column="9" selection-end-line="47" selection-end-column="9" />
           </first_editor>
           <second_editor />
         </state>

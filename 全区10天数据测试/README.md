@@ -54,32 +54,39 @@ main.py：主函数。
 
 ## 文件目录
 1. code: 源码；
+
 2. dataset: 数据集
-	- excel文件：原始文件；
-	- units: 按地址划分后的数据；
+	- origin：原始文件，几个excel，需合并；
+	- gathered.csv：原始文件合并后的数据集；
+	- gathered_units：从合并后的数据集中分出的单元门数据；
+	- gathered_doors：从合并后的数据集中分出的帮扶门数据；
+	- neighbors_units：按小区划分后的数据；
+	- units: 每个小区按地址划分后的数据；
 	- redundancy_deleted: 删除重复状态后的数据；
 	- complete_units: 补充缺失状态后的数据；
 3. counts: 数据统计计算
-	- 1day: 各设备每天的开门总次数；
+	- 1day_origin: 各设备每天的开门总次数；
+	- 1day：将超过5天开门次数为0的设备剔除保存后的每天开门总次数（还未实现剔除，所以和上面是一样的）；
 	- 1hour: 各设备每小时的开门总次数；
 	- peer_day: 各设备每周中每天的开门总次数；
 	- peer_hour: 各设备每天中每小时的开门总次数；
-	- weeks_split: 将各设备每天开门总次数按周分成单独的文件；
-	- days_split: 将各设备每小时开门总次数按天分成单独的文件；
-	- sprint_festival: 各设备春节期间开门次数，按每小时/每天分开；
-	- total_open_condition.csv: 分时段计算的各设备总开门次数(工作日工作时段，工作日夜间，周末日间，凌晨)；
+	- total_open_condition：每个小区中每个地址处分时段开门次数(工作日工作时段[10,17]，工作日夜间[5,9]、[18,23]，周末日间[5,23]，凌晨[0,4])；
+	- total_open_condition.csv: 全区中每个小区分时段计算的各设备总开门次数(工作日工作时段，工作日夜间，周末日间，凌晨)；
 
-4. imgs:
-	- spring_festival：春节期间开门次数图示，别的画图函数没有运行。。。
+4. clusters：包含聚类结果图和对应设备分类文件。
+	- csv：聚类结果分类别保存成CSV文件；
+	- imgs：聚类结果中每个类别作一张图保存；
+	- daily_count：按聚类结果分类计算一天中每小时平均开门次数；
+	- weekly_count：按聚类结果分类计算一周中每天平均开门次数；
+	- statistical_model：按聚类结果找出每个类别对应的均值标准差模型；
+	- plot_dendrogram.png：聚类层次图。
 
-5. clusters：包含聚类结果图和对应设备分类文件。
+5. statistic_model：均值标准差模型
+	- daily_workday：工作日一日模型
+	- daily_weekend：周末一日模型
+	- weekly: 一周模型
 
-6. statistic_model：均值标准差模型
-	Daily_workday：工作日一日模型
-	Daily_weekend：周末一日模型
-	Weekly: 一周模型
-
-7. anomaly_result:
+7. anomaly_result: 异常，暂未计算
 	- daily: 异常日期
 		- anomalies：FFT模型检测出的异常；
 		- corr_anomalies：与均值标准差模型对比后的正确异常结果（即使用均值标准差也表现为异常的）；

@@ -6,11 +6,16 @@ import os
 from dateparsers import dateparse4
 
 # 读取数据
+# 【
+# 	address: 单元设备地址；
+# 	unit：小区地址；
+#  	o_path: 源数据路径；
+#  	d_path：结果存储的路径；
+#  】
 def read_df( address, unit, o_path, d_path):
 	path = o_path + unit + '/' + address
-	print(path)
 	o = open(path, 'rb')
-	df = pd.read_csv(o, parse_dates=['received_time'], date_parser = dateparse4)
+	df = pd.read_csv(o, parse_dates=['received_time'], date_parser = dateparse4, encoding='gbk')
 
 	# 根据情况过滤出一日模型的工作日/周末数据(一周模型无需过滤)
 	status = d_path.split('/')[-2]
@@ -28,7 +33,8 @@ def read_df( address, unit, o_path, d_path):
 
 # 建模
 # 【
-# 	unit：单元设备地址；
+# 	address: 单元设备地址；
+# 	unit：小区地址；
 #  	o_path: 源数据路径；
 #  	d_path：结果存储的路径；
 #  】

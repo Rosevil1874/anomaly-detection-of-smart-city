@@ -28,6 +28,10 @@ class LSTM:
 
 
     # 构造数据集
+    # 【
+    #   test_size：测试集比例；
+    #   random_state：随机数种子（为0或不指定时每次随即结果不一样）
+    # 】
     def create_dataset(self, test_size = 0.3, random_state=0):
         # 归一化
         self.scaler_series = self.scaler.fit_transform(self.source_data)
@@ -110,10 +114,17 @@ class LSTM:
         return net_pre, result
 
 
-    # 找到指标最大的几个异常点，或指定一个指标，大于该指标的为异常点
-    def findAbnormalPoints(self, source, quota, MAE=False, MAPE=False):
-        if MAE is True and MAPE is True:
-            print("Parameter MAE and MAPE can not be True at the same time")
+    # 找到指标最大的几个异常点，或指定一个指标，大于该指标阈值的为异常点
+    # 【
+    #   source：数据集（这里是进行预测后的结果）；
+    #   quota：寻找指标最大几个异常点时，quota为异常点个数；寻找MAE或MSE大于某阈值的异常点时，quota为阈值；
+    #   MAE：为True时寻找MAE大于某阈值的异常；
+    #   MSE：为True时寻找MSE大于某阈值的异常；
+    #   当MAE与MSE同时为False时函数功能为寻找指标最大的几个异常点。
+    # 】
+    def findAbnormalPoints(self, source, quota, MAE=False, MSE=False):
+        if MAE is True and MSE is True:
+            print("Parameter MAE and MSE can not be True at the same time")
             return None
         if len(source) != len(self.result_data):
             print("The length of source and result must be the same")
@@ -125,7 +136,7 @@ class LSTM:
             for i in range(len(source)):
                 if abs(source[i] - self.result_data[i]) > quota:
                     ab_index.append(i)
-        elif MAPE is True:
+        elif MSE is True:
             for i in range(len(source)):
                 if abs((source[i] - self.result_data[i]) / source[i]) > quota:
                     ab_index.append(i)
@@ -133,13 +144,13 @@ class LSTM:
         # 找到值最大的quota个索引
         else:
             MAE_set = {}
-            MAPE_set = {}
-            MAE_min_key, MAPE_min_key = '-1', '-1'
-            MAE_min_value, MAPE_min_value = -1, -1
+            MSE_set = {}
+            MAE_min_key, MSE_min_key = '-1', '-1'
+            MAE_min_value, MSE_min_value = -1, -1
 
             for i in range(len(source)):
-                MAE_value = abs(source[i] - self.result_data[i])
-                MAPE_value = abs((source[i] - self.result_data[i]) / source[i])
+                MAE_value =  mean_absolute_error([source[i]], [self.result_data[i]])
+                MSE_value = mean_squared_error([source[i]], [self.result_data[i]])
 
                 if len(MAE_set) >= quota:
                     if MAE_value > MAE_min_value:
@@ -153,20 +164,20 @@ class LSTM:
                     MAE_min_key = min(MAE_set, key=MAE_set.get)
                     MAE_min_value = MAE_set[MAE_min_key]
 
-                if len(MAPE_set) >= quota:
-                    if MAPE_value > MAPE_min_value:
-                        MAPE_set.pop(MAPE_min_key)
-                        MAPE_set[str(i)] = MAPE_value
-                        MAPE_min_key = min(MAPE_set, key=MAPE_set.get)
-                        MAPE_min_value = MAPE_set[MAPE_min_key]
+                if len(MSE_set) >= quota:
+                    if MSE_value > MSE_min_value:
+                        MSE_set.pop(MSE_min_key)
+                        MSE_set[str(i)] = MSE_value
+                        MSE_min_key = min(MSE_set, key=MSE_set.get)
+                        MSE_min_value = MSE_set[MSE_min_key]
                 else:
-                    MAPE_set[str(i)] = MAPE_value
-                    MAPE_min_key = min(MAPE_set, key=MAPE_set.get)
-                    MAPE_min_value = MAPE_set[MAPE_min_key]
+                    MSE_set[str(i)] = MSE_value
+                    MSE_min_key = min(MSE_set, key=MSE_set.get)
+                    MSE_min_value = MSE_set[MSE_min_key]
 
             ab_index1 = []
             ab_index2 = []
-            for key1, key2 in zip(MAE_set, MAPE_set):
+            for key1, key2 in zip(MAE_set, MSE_set):
                 ab_index1.append(int(key1))
                 ab_index2.append(int(key2))
             # ab_index.append(ab_index1)
@@ -182,7 +193,6 @@ class LSTM:
         source_data = self.source_data
         result_data = self.result_data
 
-
         print( '异常个数：', len(ab_index))
         ab_value = []
         real_index = [int(i) + look_back for i in ab_index]
@@ -196,7 +206,18 @@ class LSTM:
         plt.legend(loc='best')
         plt.show()
 
-# 读取数据
+
+# 读取数据：
+# 【
+# 	address: 单元设备地址；
+# 	unit：小区地址；
+#  	o_path: 源数据路径；
+#  】
+# 返回值：
+# 【
+# 	source_df: 源数据DataFrame；
+# 	source_data.values：源数据中开门次数属性列的Series；
+#  】
 def read_data(address, unit, o_path):
     path = o_path + unit + '/' + address
     o1 = open(path, 'rb')
@@ -208,6 +229,12 @@ def read_data(address, unit, o_path):
     return source_df, source_data.values
 
 # 保存结果
+# 【
+# 	source_data: 源数据DataFrame；
+# 	ab_index：异常点索引；
+#  	look_back: 滑窗大小（以look_back个点的值预测第look_back+1个点的值；
+#  	d_path：结果保存路径。
+#  】
 def save_result(source_data, ab_index, look_back, d_path):
     real_index = [int(i) + look_back for i in ab_index]
     abnormal_df, abnormal_idx = pd.DataFrame(columns=['address', 'received_time', 'weekday', 'day_type', 'period_of_time', 'open_count']), 0
@@ -251,6 +278,12 @@ def save_result(source_data, ab_index, look_back, d_path):
     abnormal_df.to_csv(d_path, index=None)
 
 # 检测正确性
+# 【
+# 	device_o_path: 异常结果存储路径；
+# 	workday_o_path：工作日均值标准差模型存储路径；
+#  	weekend_o_path: 周末均值标准差模型存储路径；
+#  	corr_anomalies_o_path：正确检测的异常结果保存路径。
+#  】
 def hourly_anomaly_corr_rate(device_o_path, workday_o_path, weekend_o_path, corr_anomalies_o_path):
     address = device_o_path.split('/')[-1]
     o = open(workday_o_path + address.split('.')[0] + '/' + address)
@@ -304,6 +337,12 @@ def hourly_anomaly_corr_rate(device_o_path, workday_o_path, weekend_o_path, corr
     return corr_rate
 
 # 使用LSTM模型进行异常检测
+# 【
+# 	address: 单元设备地址；
+# 	unit：小区地址；
+#  	o_path: 源数据路径；
+#  	d_path：结果存储的路径；
+#  】
 def lstm(address, unit, o_path, d_path):
     source_df, source_data = read_data(address, unit, o_path)
     lstm_model = LSTM(source_data, 10, 500)

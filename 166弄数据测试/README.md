@@ -1,5 +1,4 @@
 # 岚皋路166弄数据分析
-异常检测部分只使用数据量最大的15号数据进行测试。
 
 ## 代码使用
 
@@ -42,7 +41,7 @@ main.py：主函数。
 
 
 **聚类：**
-- clusters.py： 层次聚类，以“工作日工作时段，工作日通勤时段，周末日间，凌晨”的开门次数作为属性进行划分。
+- clusters.py： 层次聚类，以“工作日工作时段，工作日通勤时段，周末日间，凌晨”的开门次数作为属性对小区的每个单元进行划分。
 - cluster1.py：DBSCAN聚类，属性同上。
 
 
@@ -50,19 +49,9 @@ main.py：主函数。
 - oneclass_SVM.py：单类支持向量机异常检测，结果很差。
 - auto_encoder.py：使用自编码器进行预测，并使用MAE和MSE进行异常判别标准，效果不佳。
 - FFT.py：使用Airbnb的异常检测方案，使用原序列减去周期和趋势得到误差项，效果很差。（这个应该是我实现的问题，没搞懂FFT怎么弄的。。。）
-- LSTM.py：使用LSTM模型对序列进行预测，并使用MAE和MAPE结合找出异常；
+- LSTM.py：使用LSTM模型对序列进行预测，并使用MAE和MSE结合找出异常；
 - LSTM_class.py：使用类实现LSTM；
 
-
-
-**基于统计的异常检测：**
-- daily_anomaly.py：建立每个设备一天中24个小时的正常开门次数模型；
-- weekly_anomaly.py：建立每个设备一周中7天的正常开门次数模型；
-
-
-**自编码器：**
-- autoencoder.py：将分时段聚类结果中第二类的数据聚合，使用自编码器训练并在15号设备测试。
-使用ASE和ACE作为评价指标判定异常。
 
 
 ## 文件目录
@@ -88,9 +77,9 @@ main.py：主函数。
 5. clusters：包含聚类结果图和对应设备分类文件。
 
 6. statistic_model：均值标准差模型
-	Daily_workday：工作日一日模型
-	Daily_weekend：周末一日模型
-	Weekly: 一周模型
+	- daily_workday：工作日一日模型
+	- daily_weekend：周末一日模型
+	- weekly: 一周模型
 
 7. anomaly_result:
 	- daily: 异常日期
