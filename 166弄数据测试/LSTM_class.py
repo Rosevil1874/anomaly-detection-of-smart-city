@@ -305,14 +305,14 @@ def hourly_anomaly_corr_rate(device_o_path, workday_o_path, weekend_o_path, corr
 
 
 # 使用LSTM模型进行异常检测
-def lstm_class(unit, o_path, d_path, img_path):
+def lstm_class(unit, o_path, d_path, img_path, abnormal_rate):
     source_df, source_data = read_data(unit, o_path)
     lstm_model = LSTM(source_data, 10, 500)
     x = lstm_model.create_dataset(test_size=0.3, random_state=0)
     lstm_model.create_model()
     lstm_model.fit_model()
     net_pre, result = lstm_model.predict(x)
-    lstm_model.findAbnormalPoints(lstm_model.source_data[lstm_model.look_back:], 10)
+    lstm_model.findAbnormalPoints(lstm_model.source_data[lstm_model.look_back:], len(source_df)*abnormal_rate)
     lstm_model.show(result, unit, img_path)
     ab_index, look_back = lstm_model.ab_index, lstm_model.look_back
     save_result(source_df, ab_index, look_back, d_path + unit)

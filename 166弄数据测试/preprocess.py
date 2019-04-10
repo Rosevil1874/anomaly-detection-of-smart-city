@@ -130,15 +130,6 @@ def data_supplement(unit, o_path, d_path):
 						df = df.reset_index(drop = True)		# 重置索引
 						idx = idx + 1
 						break
-					else:							# 不是前3种情况，说明未上报“超时未关门报警”和其前的“正常开门”状态，在此状态后1分钟补充上“正常开门”，后6分钟补充“超时未关门报警”
-						time_normal = df.loc[j]['received_time'] + timedelta(minutes = 1)
-						time = df.loc[j]['received_time'] + timedelta(minutes = 6)
-						df_insert.loc[0] = {'address': address,'status': 4,'received_time': pd.datetime.strftime(time,'%Y-%m-%d %H:%M:%S')}
-						df_insert.loc[1] = {'address': address,'status': 6,'received_time': pd.datetime.strftime(time_normal,'%Y-%m-%d %H:%M:%S')}
-						df = pd.concat([df[:j+1], df_insert, df[j+1:]], axis = 0)
-						df = df.reset_index(drop = True)		# 重置索引
-						idx = idx + 1
-						break
 				if j == 0:
 					idx += 1
 		else:

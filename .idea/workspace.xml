@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9731f2c9-1686-4a51-b7d7-d50ed4d7ef32" name="Default Changelist" comment="全区">
-      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+    <list default="true" id="9731f2c9-1686-4a51-b7d7-d50ed4d7ef32" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/166弄数据测试/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/166弄数据测试/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/全区10天数据测试/LSTM.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/LSTM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/全区10天数据测试/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/全区10天数据测试/cluster.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/cluster.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/全区10天数据测试/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/全区10天数据测试/statistical.py" beforeDir="false" afterPath="$PROJECT_DIR$/全区10天数据测试/statistical.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -56,11 +49,6 @@
               <item name="anomaly-detection-of-smart-city" type="462c0819:PsiDirectoryNode" />
               <item name="166弄数据测试" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="anomaly-detection-of-smart-city" type="b2602c69:ProjectViewProjectNode" />
-              <item name="anomaly-detection-of-smart-city" type="462c0819:PsiDirectoryNode" />
-              <item name="全区10天数据测试" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -70,7 +58,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="E:/城市大脑/城市大脑/数据分析/门磁/166弄 总" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
@@ -100,7 +88,8 @@
       <option name="presentableId" value="Default" />
       <updated>1553950689165</updated>
       <workItem from="1553950690467" duration="2275000" />
-      <workItem from="1554037725464" duration="328000" />
+      <workItem from="1554037725464" duration="442000" />
+      <workItem from="1554856055290" duration="46000" />
     </task>
     <task id="LOCAL-00001" summary="166弄四个月数据进行各种功能测试。">
       <created>1553951375405</created>
@@ -123,11 +112,18 @@
       <option name="project" value="LOCAL" />
       <updated>1554038042514</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="刚刚忘记勾选文件了。。。">
+      <created>1554038080838</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1554038080838</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2603000" />
+    <option name="totallyTimeSpent" value="2763000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -141,7 +137,7 @@
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.30385852" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.30814576" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -211,7 +207,8 @@
     <MESSAGE value="166弄四个月数据进行各种功能测试。" />
     <MESSAGE value="全区10天数据测试。" />
     <MESSAGE value="1. 日期原本是反序的，将其反转成正序；&#10;2. 状态补充函数还有一定问题；&#10;3. 使用层次聚类将全区的小区分为10类，并根据聚类结果寻找各类别的均值标准差模型（类型9最后结果均为0应该是小区中为0的太多，求平均后整体被拉为0）；&#10;4. 加了一些代码注释。" />
-    <option name="LAST_COMMIT_MESSAGE" value="1. 日期原本是反序的，将其反转成正序；&#10;2. 状态补充函数还有一定问题；&#10;3. 使用层次聚类将全区的小区分为10类，并根据聚类结果寻找各类别的均值标准差模型（类型9最后结果均为0应该是小区中为0的太多，求平均后整体被拉为0）；&#10;4. 加了一些代码注释。" />
+    <MESSAGE value="刚刚忘记勾选文件了。。。" />
+    <option name="LAST_COMMIT_MESSAGE" value="刚刚忘记勾选文件了。。。" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/code/README.md" />

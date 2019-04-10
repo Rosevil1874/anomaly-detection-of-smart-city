@@ -61,7 +61,6 @@ from preprocess import gather_data, split_by_address, delete_redundancy, data_su
 # 4. 将逐小时数据按天分开成单独的csv文件，方便绘图
 # 5. 将逐天数据按周分开成单独的csv文件，方便绘图
 # 6. 计算单元设备总开门次数(工作日工作时段，工作日夜间，周末日间，凌晨)
-# 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
 
 from counters import rooms_open_counter, open_frequency_peer_hour,open_frequency_peer_day,\
     split_by_day, split_by_week,total_open_condition,open_to_close_time, spring_festival_open
@@ -191,20 +190,35 @@ from statistical import model
 # ------------------------------------------------ 5. 聚类分析  ----------------------------------------------------
 # 画出层次聚类树状图，输出聚类结果，画出每一类的设备表现图
 # from cluster import cluster
-from cluster1 import cluster1
-
-o_path = '../counts/total_open_condition.csv' 	#开门不同时段
-d_path = '../clusters/'
-if not os.path.exists(d_path):
-    os.makedirs(d_path)
-cluster1(o_path, d_path)
+# # from cluster1 import cluster1
+#
+# o_path = '../counts/total_open_condition.csv' 	#开门不同时段
+# d_path = '../clusters/'
+# if not os.path.exists(d_path):
+#     os.makedirs(d_path)
+# cluster(o_path, d_path)
 
 # ------------------------------------------------ 6. 异常检测 LSTM  ---------------------------------------------------
+from counters import del_much_zeros
 from LSTM_class import lstm_class, hourly_anomaly_corr_rate
+
+
+# 将四分之三以上数据为0的设备剔除
+# o_path = '../counts/1hour/'
+# d_path1 = '../counts/1hour_much_zeros/'
+# d_path2 = '../counts/1hour_little_zeros/'
+# if not os.path.exists(d_path1):
+#     os.makedirs(d_path1)
+# if not os.path.exists(d_path2):
+#     os.makedirs(d_path2)
+# units = os.listdir(o_path)
+# for unit in units:
+#     del_much_zeros(unit, o_path, d_path1, d_path2)
+
 
 start_time = datetime.datetime.now()
 # 训练LSTM模型并根据MAE和MAPE检测异常
-# o_path = '../counts/1hour/'
+# o_path = '../counts/1hour_little_zeros/'
 # d_path = '../anomaly_result/hourly/LSTM/anomalies/'
 # img_path = '../anomaly_result/hourly/LSTM/imgs/'
 # if not os.path.exists(d_path):
@@ -213,11 +227,15 @@ start_time = datetime.datetime.now()
 #     os.makedirs(img_path)
 # units = os.listdir(o_path)
 # look_back = 5
+# abnormal_rate = 0.03    # 找出数据表现最异常的3%
 # for unit in units:
-#     lstm_class(unit, o_path, d_path, img_path)
+#     lstm_class(unit, o_path, d_path, img_path, abnormal_rate)
+# end_time = datetime.datetime.now()
+# print('start_time: ', start_time, 'end_time: ', end_time, 'during: ',end_time - start_time)
 
 # 根据均值标准差模型检验异常检测正确率
 # corr_anomalies_path = '../anomaly_result/hourly/LSTM/corr_anomalies/'
+# d_path = '../anomaly_result/hourly/LSTM/anomalies/'
 # if not os.path.exists(corr_anomalies_path):
 #     os.makedirs(corr_anomalies_path)
 # workday_path = '../statistical_model/daily_workday/'
@@ -236,8 +254,8 @@ start_time = datetime.datetime.now()
 # print('时刻异常检测平均正确率: ', mean_corr_rate)
 # end_time = datetime.datetime.now()
 # print('start_time: ', start_time, 'end_time: ', end_time, 'during: ',end_time - start_time)
-
-# 将异常结果汇总成一个表
+#
+# # 将异常结果汇总成一个表
 # o_path = '../anomaly_result/hourly/LSTM/corr_anomalies/'
 # d_path = '../anomaly_result/hourly/LSTM/total.csv'
 # hourly_df = None
@@ -253,6 +271,8 @@ start_time = datetime.datetime.now()
 # hourlyFile = open(d_path, 'w')
 # del hourly_df['Unnamed: 0']
 # hourly_df.to_csv(d_path, index = None)
+# end_time = datetime.datetime.now()
+# print('start_time: ', start_time, 'end_time: ', end_time, 'during: ',end_time - start_time)
 
 # ------------------------------------------------ 6. 异常检测 FFT  ---------------------------------------------------
 from FFT import anomaly_detection,daily_anomaly_corr_rate, hourly_anomaly_corr_rate, gather_anomalies
@@ -336,3 +356,17 @@ from FFT import anomaly_detection,daily_anomaly_corr_rate, hourly_anomaly_corr_r
 # dailyFile = open(daily_d_path, 'w')
 # hourly_df.to_csv(hourly_d_path, index = None)
 # daily_df.to_csv(daily_d_path, index = None)
+
+
+# --------------------------------------------- 7. 根据超时时长设置报警规则  ---------------------------------------------------
+# 1. 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
+
+from counters import open_to_close_time
+
+o_path = '../dataset/complete_units/'
+d_path = '../counts/open_to_close_time/'
+if not os.path.exists(d_path):
+    os.makedirs(d_path)
+units = os.listdir(o_path)
+for unit in units:
+    open_to_close_time(unit, o_path, d_path)

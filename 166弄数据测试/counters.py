@@ -1,6 +1,3 @@
-from pandas import DataFrame
-from datetime import datetime
-from datetime import timedelta
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -9,6 +6,9 @@ import datetime
 import csv
 import os
 import re
+from datetime import timedelta
+from datetime import datetime
+from shutil import copyfile
 from dateparsers import dateparse1, dateparse2, dateparse3, dateparse4
 
 # -------------------------------------------------------- 自定义函数  ------------------------------------------------------- #
@@ -330,6 +330,11 @@ def split_by_week(unit, o_path, d_path):
 
 
 # 提取出春节期间正常开门次数数据
+# 【
+# 	unit：单元设备地址；
+#  	o_path: 源数据路径；
+#  	d_path：结果存储的路径；
+#  】
 def spring_festival_open(unit, o_path, d_path):
 	path = o_path + unit
 	o = open(path, 'rb')
@@ -349,10 +354,15 @@ def spring_festival_open(unit, o_path, d_path):
 
 
 # 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
-def open_to_close_time(unit):
-	path = 'units/' + unit
+# 【
+# 	unit：单元设备地址；
+#  	o_path: 源数据路径；
+#  	d_path：结果存储的路径；
+#  】
+def open_to_close_time(unit, o_path, d_path):
+	path = o_path + unit
 	o = open(path, 'rb')
-	df = pd.read_csv(o, parse_dates=["received_time"], date_parser=dateparse)
+	df = pd.read_csv(o, parse_dates=["received_time"], date_parser=dateparse2)
 	df_out = pd.DataFrame(columns = ['start_time', 'end_time', 'duration'])
 	i, idx = 0, 0			# 控制原df的遍历，控制新df_out的新行添加
 
@@ -360,7 +370,7 @@ def open_to_close_time(unit):
 	while idx < len(df):
 		start_time, end_time = None, None
 		if df.loc[idx]['status'] == 6:
-			start_time = df.loc[idx - 1]['received_time'] - timedelta(minutes = 5)
+			start_time = df.loc[idx]['received_time'] - timedelta(minutes = 5)
 			idx += 1
 			for j in range(idx, len(df)):
 				if df.loc[j]['status'] == 0:
@@ -382,10 +392,27 @@ def open_to_close_time(unit):
 			df_out.loc[i] = {'start_time': start_time, 'end_time': end_time, 'duration': duration}
 			i += 1
 
-	new_path = 'counts/open_to_close_time/' + unit
-	csvfile = open(new_path, 'w')
-	df_out.to_csv(new_path)
+	new_path = d_path + unit
+	csvFile = open(new_path, 'w')
+	df_out.to_csv(new_path, index=None)
 
+# 将一半以上数据为0的设备剔除
+# 【
+# 	unit：单元设备地址；
+#  	o_path: 源数据路径；
+#  	d_path1：四分之三以上数据为0的设备结果存储的路径；
+#  	d_path2：其他设备结果存储的路径；
+#  】
+def del_much_zeros(unit, o_path, d_path1, d_path2):
+	path = o_path + unit
+	o = open(path, 'rb')
+	df = pd.read_csv(o, usecols=[1])
+	open_count = [int(i) for i in df.as_matrix()]
+	non_zeros_rate = len( np.nonzero(open_count)[0]) / len(open_count)
+	if non_zeros_rate < 0.25:
+		copyfile(o_path + unit, d_path1 + unit)
+	else:
+		copyfile(o_path + unit, d_path2 + unit)
 
 # -----------------------------------------------  以下函数调用按实际需求调用  ------------------------------------------------ #
 
