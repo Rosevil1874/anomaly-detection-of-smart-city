@@ -52,6 +52,8 @@ main.py：主函数。
 - LSTM.py：使用LSTM模型对序列进行预测，并使用MAE和MSE结合找出异常；
 - LSTM_class.py：使用类实现LSTM；
 
+**建立告警规则**：alarm.py
+
 
 
 ## 文件目录
@@ -69,6 +71,10 @@ main.py：主函数。
 	- weeks_split: 将各设备每天开门总次数按周分成单独的文件；
 	- days_split: 将各设备每小时开门总次数按天分成单独的文件；
 	- sprint_festival: 各设备春节期间开门次数，按每小时/每天分开；
+	- open_to_close_time：每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件（超时事件）的开始时间、结束事件、时长；
+	- hourly_open_to_close_time：每个设备4个月数据中开始事件在每个小时内超时事件的次数、时长；
+	- unit_alarm_rules：为每个设备每个小时设置的告警规则（从这个小时开始的超时事件持续的时长上限）；
+	- alarm_reduce_rate.csv：使用新规则后报警率降低的百分比；
 	- total_open_condition.csv: 分时段计算的各设备总开门次数(工作日工作时段，工作日夜间，周末日间，凌晨)；
 
 4. imgs:

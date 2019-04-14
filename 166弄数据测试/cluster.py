@@ -47,9 +47,8 @@ def cluster(source_path, result_path):
 
 		for j in range(len(tmp)):                                 #作图
 			plt.plot( range(1, 5), tmp.iloc[j], style[i - 1] )
-
 			plt.xticks( range(1, 5), xlabels, rotation = 20 )         #坐标标签
-			plt.title( u'门洞类别%s' % (i) )                         	#从1开始计数
-			plt.subplots_adjust( bottom=0.15 )                        #调整底部
-			plt.savefig( u'%s%s.png' % (pic_output, i) )            	#保存图片
+		plt.title( u'门洞类别%s' % (i) )                         	#从1开始计数
+		plt.subplots_adjust( bottom=0.15 )                        #调整底部
+		plt.savefig( u'%s%s.png' % (pic_output, i) )            	#保存图片
 

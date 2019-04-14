@@ -63,7 +63,7 @@ from preprocess import gather_data, split_by_address, delete_redundancy, data_su
 # 6. 计算单元设备总开门次数(工作日工作时段，工作日夜间，周末日间，凌晨)
 
 from counters import rooms_open_counter, open_frequency_peer_hour,open_frequency_peer_day,\
-    split_by_day, split_by_week,total_open_condition,open_to_close_time, spring_festival_open
+    split_by_day, split_by_week,total_open_condition, spring_festival_open
 
 # 1. 计算单元设备每小时/每日开门次数
 # o_path = '../dataset/complete_units/'
@@ -360,13 +360,38 @@ from FFT import anomaly_detection,daily_anomaly_corr_rate, hourly_anomaly_corr_r
 
 # --------------------------------------------- 7. 根据超时时长设置报警规则  ---------------------------------------------------
 # 1. 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
+# 2. 计算设备超时事件在每个小时发生的次数和时长
+# 3. 根据超时事件在每个小时发生的次数和时长为每个设备计算报警规则
+# 4. 计算根据新的规则报警率下降情况
 
-from counters import open_to_close_time
+from alram import open_to_close_time, hourly_open_to_close_time, unit_alarm_rules, alarm_reduce_rate
 
-o_path = '../dataset/complete_units/'
-d_path = '../counts/open_to_close_time/'
-if not os.path.exists(d_path):
-    os.makedirs(d_path)
-units = os.listdir(o_path)
-for unit in units:
-    open_to_close_time(unit, o_path, d_path)
+# o_path = '../dataset/complete_units/'
+# d_path = '../counts/open_to_close_time/'
+# if not os.path.exists(d_path):
+#     os.makedirs(d_path)
+# units = os.listdir(o_path)
+# for unit in units:
+#     open_to_close_time(unit, o_path, d_path)
+
+# o_path = '../counts/open_to_close_time/'
+# d_path = '../counts/hourly_open_to_close_time/'
+# if not os.path.exists(d_path):
+#     os.makedirs(d_path)
+# units = os.listdir(o_path)
+# for unit in units:
+#     hourly_open_to_close_time(unit, o_path, d_path)
+
+
+# before_path = '../counts/hourly_open_to_close_time/'
+# after_path = '../counts/unit_alarm_rules/'
+# d_path = '../counts/alarm_reduce_rate.csv'
+# df_result, i = pd.DataFrame(columns = ['address', 'reduce_rate']), 0
+# units = os.listdir(before_path)
+# for unit in units:
+#     reduce_rate = alarm_reduce_rate(unit, before_path, after_path)
+#     df_result.loc[i] = {'address': unit.split('.')[0], 'reduce_rate': reduce_rate}
+#     i += 1
+# csvFile = open(d_path, 'w')
+# df_result.to_csv(d_path, index=None)
+# print('mean reduce rate:', df_result['reduce_rate'].mean())

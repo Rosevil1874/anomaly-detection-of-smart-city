@@ -353,49 +353,6 @@ def spring_festival_open(unit, o_path, d_path):
 	df.to_csv(d_path + unit, index=None)
 
 
-# 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
-# 【
-# 	unit：单元设备地址；
-#  	o_path: 源数据路径；
-#  	d_path：结果存储的路径；
-#  】
-def open_to_close_time(unit, o_path, d_path):
-	path = o_path + unit
-	o = open(path, 'rb')
-	df = pd.read_csv(o, parse_dates=["received_time"], date_parser=dateparse2)
-	df_out = pd.DataFrame(columns = ['start_time', 'end_time', 'duration'])
-	i, idx = 0, 0			# 控制原df的遍历，控制新df_out的新行添加
-
-	# 遍历查找事件的开始时间（超时的前五分钟-正常开门）和结束时间（报警解除）
-	while idx < len(df):
-		start_time, end_time = None, None
-		if df.loc[idx]['status'] == 6:
-			start_time = df.loc[idx]['received_time'] - timedelta(minutes = 5)
-			idx += 1
-			for j in range(idx, len(df)):
-				if df.loc[j]['status'] == 0:
-					continue
-				elif df.loc[j]['status'] == 7:
-					end_time = df.loc[j]['received_time']
-					idx = j + 1
-					break
-				else:
-					break
-			else:
-				idx += 1
-		else:
-			idx += 1
-
-		# 计算事件的时长
-		if start_time and end_time:
-			duration = round ((end_time - start_time).seconds/3600, 2)		# 将time_delta转化为秒再转化为小时为单位（保留两位小数）
-			df_out.loc[i] = {'start_time': start_time, 'end_time': end_time, 'duration': duration}
-			i += 1
-
-	new_path = d_path + unit
-	csvFile = open(new_path, 'w')
-	df_out.to_csv(new_path, index=None)
-
 # 将一半以上数据为0的设备剔除
 # 【
 # 	unit：单元设备地址；
