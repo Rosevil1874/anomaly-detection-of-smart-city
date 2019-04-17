@@ -359,13 +359,16 @@ from FFT import anomaly_detection,daily_anomaly_corr_rate, hourly_anomaly_corr_r
 
 
 # --------------------------------------------- 7. 根据超时时长设置报警规则  ---------------------------------------------------
+# 1. 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长；
+# 2. 计算设备超时事件在每个小时发生的次数和时长；
+# 3. 根据异常检测结果提取出表现正常的每小时数据;计算设备超时事件在每个小时内发生的次数和时长，以及最大、最小、平均时长
+# 4. 根据平均超时时长设置新的报警规则；
+# 5. 计算根据新的规则报警率下降情况。
+
+from alram_v2 import open_to_close_time, hourly_start_open_to_close_time, hourly_open_to_close_time, \
+    unit_alarm_rules, alarm_reduce_rate
+
 # 1. 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
-# 2. 计算设备超时事件在每个小时发生的次数和时长
-# 3. 根据超时事件在每个小时发生的次数和时长为每个设备计算报警规则
-# 4. 计算根据新的规则报警率下降情况
-
-from alram import open_to_close_time, hourly_open_to_close_time, unit_alarm_rules, alarm_reduce_rate
-
 # o_path = '../dataset/complete_units/'
 # d_path = '../counts/open_to_close_time/'
 # if not os.path.exists(d_path):
@@ -374,15 +377,40 @@ from alram import open_to_close_time, hourly_open_to_close_time, unit_alarm_rule
 # for unit in units:
 #     open_to_close_time(unit, o_path, d_path)
 
+# 2. 计算设备超时事件在每个小时开始发生的次数和时长
 # o_path = '../counts/open_to_close_time/'
-# d_path = '../counts/hourly_open_to_close_time/'
+# d_path = '../counts/hourly_start_open_to_close_time/'
 # if not os.path.exists(d_path):
 #     os.makedirs(d_path)
 # units = os.listdir(o_path)
 # for unit in units:
-#     hourly_open_to_close_time(unit, o_path, d_path)
+#     hourly_start_open_to_close_time(unit, o_path, d_path)
 
 
+# 3. 根据异常检测结果提取出表现正常的每小时数据;
+# 计算设备超时事件在每个小时内发生的次数和时长，以及最大、最小、平均时长
+# anomalies_path = '../anomaly_result/hourly/LSTM/corr_anomalies/'
+# timeout_path = '../counts/open_to_close_time/'
+# days_path = '../counts/1day/'   # 按天划分的数据集，用来获取该设备共有多少天的数据
+# d_path = '../counts/hourly_open_to_close_time/'
+# if not os.path.exists(d_path):
+#     os.makedirs(d_path)
+# units = os.listdir(anomalies_path)
+# for unit in units:
+#     hourly_open_to_close_time(unit, anomalies_path, timeout_path, days_path, d_path)
+
+
+# 4. 根据平均超时时长设置新的报警规则；
+# o_path = '../counts/hourly_open_to_close_time/'
+# d_path = '../counts/unit_alarm_rules/'
+# if not os.path.exists(d_path):
+#     os.makedirs(d_path)
+# units = os.listdir(o_path)
+# for unit in units:
+#     unit_alarm_rules(unit, o_path, d_path)
+
+
+# 5. 计算根据新的规则报警率下降情况
 # before_path = '../counts/hourly_open_to_close_time/'
 # after_path = '../counts/unit_alarm_rules/'
 # d_path = '../counts/alarm_reduce_rate.csv'

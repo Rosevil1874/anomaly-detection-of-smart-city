@@ -1,12 +1,9 @@
 import numpy as np
 import pandas as pd
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 from dateparsers import dateparse1, dateparse2, dateparse3, dateparse4
 from collections import Counter
-
-
-# 删除开门次数异常的数据，用剩下的数据找出超时一般规律
 
 
 # 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
@@ -37,14 +34,12 @@ def open_to_close_time(unit, o_path, d_path):
 					break
 				else:
 					break
-			else:
-				idx += 1
 		else:
 			idx += 1
 
 		# 计算事件的时长
 		if start_time and end_time:
-			duration = round ((end_time - start_time).seconds/3600, 2)		# 将time_delta转化为秒再转化为小时为单位（保留两位小数）
+			duration = round ((end_time - start_time).total_seconds()/3600, 2)		# 将time_delta转化为秒再转化为小时为单位（保留两位小数）
 			df_out.loc[i] = {'start_time': start_time, 'end_time': end_time, 'duration': duration}
 			i += 1
 
@@ -59,7 +54,7 @@ def open_to_close_time(unit, o_path, d_path):
 #  	o_path: 源数据路径；
 #  	d_path：结果存储的路径；
 #  】
-def hourly_open_to_close_time(unit, o_path, d_path):
+def hourly_start_open_to_close_time(unit, o_path, d_path):
 	path = o_path + unit
 	o = open(path, 'rb')
 	df = pd.read_csv(o, parse_dates=["start_time"], date_parser=dateparse2)
@@ -92,6 +87,74 @@ def hourly_open_to_close_time(unit, o_path, d_path):
 	result_df.to_csv(d_path + unit, index=None)
 
 
+# 根据异常检测结果提取出表现正常的每小时数据
+# 【
+# 	unit：单元设备地址；
+#  	anomalies_path: 异常数据路径；
+#  	timeout_path：超时数据路径；
+#  	days_path：按天划分的数据集，用来获取该设备共有多少天的数据；
+#  	d_path：结果存储的路径；
+#  】
+def hourly_open_to_close_time(unit, anomalies_path, timeout_path, days_path, d_path):
+	path1, path2, path3 = anomalies_path + unit, timeout_path + unit, days_path + unit
+	o1, o2, o3 = open(path1, 'rb'), open(path2, 'rb'), open(path3, 'rb')
+	anomalies_df = pd.read_csv(o1, parse_dates=['received_time'], date_parser=dateparse2, encoding='gbk')
+	timeout_df = pd.read_csv(o2, parse_dates=['start_time', 'end_time'], date_parser=dateparse2)
+	days_df = pd.read_csv(o3)
+	days = len(days_df)  # 该设备共有days天的数据
+
+	abnormal_hours = anomalies_df['received_time']
+	abnormal_hours = [x.strftime('%Y-%m-%d %H') for x in abnormal_hours]
+
+	hours = [i for i in range(24)]
+	durations = [0] * 24
+	counts = [0] * 24
+	min_duration = [float('inf')] * 24
+	max_duration = [float('-inf')] * 24
+
+	for idx in timeout_df.index:
+		start_time = timeout_df.loc[idx]['start_time']
+		end_time = timeout_df.loc[idx]['end_time']
+		delta = end_time - start_time
+		delta = int(np.ceil(delta.total_seconds() / 60 / 60))  # timedelta化成小时为单位
+
+		for i in range(delta):
+			# 若是开门表现异常时间，则忽略当前小时的数据
+			if start_time.strftime('%Y-%m-%d %H') in abnormal_hours:
+				continue;
+			if i == 0:
+				durations[start_time.hour] += start_time.minute
+				min_duration[start_time.hour] = min(min_duration[start_time.hour], start_time.minute)
+				max_duration[start_time.hour] = max(max_duration[start_time.hour], start_time.minute)
+			elif i == delta - 1:
+				durations[start_time.hour] += end_time.minute
+				min_duration[start_time.hour] = min(min_duration[start_time.hour], end_time.minute)
+				max_duration[start_time.hour] = max(max_duration[start_time.hour], end_time.minute)
+			else:
+				durations[start_time.hour] += 60
+				min_duration[start_time.hour] = min(min_duration[start_time.hour], 60)
+				max_duration[start_time.hour] = 60
+			counts[start_time.hour] += 1
+			start_time += timedelta(hours=1)
+
+	# 把未赋值的最大/最小时长都换成0
+	min_duration = list(map(lambda x: 0 if x == float('inf') else x, min_duration))
+	max_duration = list(map(lambda x: 0 if x == float('-inf') else x, max_duration))
+
+	# 保存成DataFrame
+	result = {}
+	result['hours'] = hours
+	result['counts'] = counts
+	result['durations'] = durations
+	result['min_durations'] = min_duration
+	result['max_durations'] = max_duration
+	tmp_durations = np.array(durations) - np.array(min_duration) - np.array(max_duration)
+	result['mean_durations'] = np.round(np.divide(tmp_durations, days - 2), 2)
+	result_df = pd.DataFrame(result)
+	columns = ['hours', 'counts', 'durations', 'min_durations', 'max_durations', 'mean_durations']
+	result_df.to_csv(d_path + unit, index=None, columns=columns)
+
+
 # 根据超时事件在每个小时发生的次数和时长为每个设备计算报警规则
 # 【
 # 	unit：单元设备地址；
@@ -105,21 +168,8 @@ def unit_alarm_rules(unit, o_path, d_path):
 	rules = [0]*24
 
 	for idx in df.index:
-		if df.loc[idx]['counts'] == 0:
-			rules[idx] = 1
-		else:
-			durations = df.loc[idx]['durations'].strip('[]')
-			durations = [float(x)for x in durations.split(',')]
-			round_durations = [np.round(x) for x in durations]
-			frequency = dict(Counter(round_durations))
-			frequent_durations = []		# 保存大于1小时的出现三次及以上的时长
-			for k,v in frequency.items():
-				if k> 1 and v >= 3:
-					frequent_durations.append(k)
-			if len(frequent_durations) != 0:
-				rules[idx] = max(frequent_durations)
-			else:
-				rules[idx] = max(int(np.mean(durations)), 1)
+			mean_duration = df.loc[idx]['mean_durations']
+			rules[idx] = (mean_duration // 5 + 1)*5
 
 	rules_df = {}
 	rules_df['hours'] = [i for i in range(24)]
