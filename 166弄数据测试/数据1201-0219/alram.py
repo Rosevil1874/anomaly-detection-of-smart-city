@@ -6,9 +6,6 @@ from dateparsers import dateparse1, dateparse2, dateparse3, dateparse4
 from collections import Counter
 
 
-# 删除开门次数异常的数据，用剩下的数据找出超时一般规律
-
-
 # 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
 # 【
 # 	unit：单元设备地址；
@@ -53,7 +50,7 @@ def open_to_close_time(unit, o_path, d_path):
 	df_out.to_csv(new_path, index=None)
 
 
-# 计算设备超时事件在每个小时发生的次数和时长
+# 计算设备超时事件在每个小时开始的次数和时长
 # 【
 # 	unit：单元设备地址；
 #  	o_path: 源数据路径；
@@ -92,7 +89,7 @@ def hourly_open_to_close_time(unit, o_path, d_path):
 	result_df.to_csv(d_path + unit, index=None)
 
 
-# 根据超时事件在每个小时发生的次数和时长为每个设备计算报警规则
+# 根据超时事件在每个小时开始的次数和时长为每个设备计算报警规则
 # 【
 # 	unit：单元设备地址；
 #  	o_path: 源数据路径；

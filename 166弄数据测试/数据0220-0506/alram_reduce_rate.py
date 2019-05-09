@@ -117,15 +117,22 @@ def hourly_open_to_close_time(unit, anomalies_path, timeout_path, days_path, d_p
 		end_time = timeout_df.loc[idx]['end_time']
 		delta = end_time - start_time
 		delta = int(np.ceil(delta.total_seconds() / 60 / 60))  # timedelta化成小时为单位
+		if delta > 24: continue;		# 忽略超过24小时的超时事件
 
 		for i in range(delta):
 			# 若是开门表现异常时间，则忽略当前小时的数据
 			if start_time.strftime('%Y-%m-%d %H') in abnormal_hours:
 				continue;
 			if i == 0:
-				durations[start_time.hour] += start_time.minute
-				min_duration[start_time.hour] = min(min_duration[start_time.hour], start_time.minute)
-				max_duration[start_time.hour] = max(max_duration[start_time.hour], start_time.minute)
+				if start_time.hour == end_time.hour:
+					diff = end_time.minute - start_time.minute
+					durations[start_time.hour] += diff
+					min_duration[start_time.hour] = min(min_duration[start_time.hour], diff)
+					max_duration[start_time.hour] = max(max_duration[start_time.hour], diff)
+				else:
+					durations[start_time.hour] += start_time.minute
+					min_duration[start_time.hour] = min(min_duration[start_time.hour], start_time.minute)
+					max_duration[start_time.hour] = max(max_duration[start_time.hour], start_time.minute)
 			elif i == delta - 1:
 				durations[start_time.hour] += end_time.minute
 				min_duration[start_time.hour] = min(min_duration[start_time.hour], end_time.minute)
@@ -148,8 +155,14 @@ def hourly_open_to_close_time(unit, anomalies_path, timeout_path, days_path, d_p
 	result['durations'] = durations
 	result['min_durations'] = min_duration
 	result['max_durations'] = max_duration
-	tmp_durations = np.array(durations) - np.array(min_duration) - np.array(max_duration)
-	result['mean_durations'] = np.round(np.divide(tmp_durations, days - 2), 2)
+	# tmp_durations = np.array(durations) - np.array(min_duration) - np.array(max_duration)
+	# result['mean_durations'] = np.round(np.divide(tmp_durations, days - 2), 2)
+	# 计算平均超时时长，并将0除以0得到的nan替换为0
+	mean_durations = np.round(np.divide(durations, counts))
+	nan_index = np.isnan(mean_durations)
+	mean_durations[nan_index] = 0
+	result['mean_durations'] = mean_durations
+
 	result_df = pd.DataFrame(result)
 	columns = ['hours', 'counts', 'durations', 'min_durations', 'max_durations', 'mean_durations']
 	result_df.to_csv(d_path + unit, index=None, columns=columns)
@@ -168,8 +181,17 @@ def unit_alarm_rules(unit, o_path, d_path):
 	rules = [0]*24
 
 	for idx in df.index:
+		counts = df.loc[idx]['counts']
+		# 超时次数小于10次的忽略不计
+		if counts < 10:
+			rules[idx] = 5
+		# 超时次数大于10次的按平均超时时长制定报警机制
+		else:
 			mean_duration = df.loc[idx]['mean_durations']
-			rules[idx] = (mean_duration // 5 + 1)*5
+			if mean_duration != 0 and mean_duration%5 == 0:
+				rules[idx] = int(mean_duration)
+			else:
+				rules[idx] = int( (mean_duration // 5 + 1)*5 )
 
 	rules_df = {}
 	rules_df['hours'] = [i for i in range(24)]
@@ -178,29 +200,63 @@ def unit_alarm_rules(unit, o_path, d_path):
 	rules_df.to_csv(d_path + unit, index=None)
 
 
+# 合并规则：报警规则类似的设备使用同一套规则
+# 【
+# 	unit：单元设备地址；
+#  	o_path: 报警规则路径；
+#  	d_path：合并后报警规则路径；
+#  】
+
+
 # 计算根据新的规则报警率下降情况
 # 【
 # 	unit：单元设备地址；
 #  	before_path: 原超时报警数据路径；
-#  	after_path：新报警规则路径；
+#  	df_rules：新报警规则；
+#  	df_classes: 设备的类别；
 #  】
 # return: 每个设备运用新规则后报警降低率
-def alarm_reduce_rate(unit, before_path, after_path):
+def alarm_reduce_rate(unit, before_path, df_rules, df_classes):
 	before = before_path + unit
-	after = after_path + unit
-	o1 = open(before, 'rb')
-	o2 = open(after, 'rb')
-	df_before = pd.read_csv(o1)
-	df_after = pd.read_csv(o2)
-	count_before = df_before['counts'].sum()
-	rules = df_after['rules'].as_matrix()
-	# print(count_before, rules[0])
+	o = open(before, 'rb')
+	df_before = pd.read_csv(o, parse_dates=['start_time', 'end_time'], date_parser=dateparse2)
+
+	# 若没有超时发生，返回0
+	count_before = len(df_before)
+	if count_before == 0:
+		return 0
+
+	# 找出设备所属类别
+	the_class = ''
+	classes = df_classes['class'].as_matrix()
+	devices = df_classes['devices'].as_matrix()
+	for i in range(len(devices)):
+		if unit.split('.')[0] in devices[i]:
+			the_class = classes[i]
+			break
+
+	# 找出类别对应规则
+	rule = df_rules.loc[the_class].as_matrix()
+	# print(the_class, rule)
+
 	count_after = 0
 	for idx in df_before.index:
-		if df_before.loc[idx]['counts'] > 0:
-			durations = df_before.loc[idx]['durations'].strip('[]')
-			durations = [float(x) for x in durations.split(',')]
-			count_after += sum(i > rules[idx] for i in durations)
+		duration = df_before.loc[idx]['duration']
+
+		# 大于1小时的情况都会报警
+		if duration >= 1:
+			count_after += 1
+			continue
+
+		# 判断小于一小时的情况有没有超出规则中的时长（规则中的单位为分钟），最多跨两个不同的时刻
+		start_time, end_time = df_before.loc[idx]['start_time'], df_before.loc[idx]['end_time']
+		if start_time.hour < end_time.hour:
+			if 60 - start_time.minute >= rule[start_time.hour] or end_time.minute >= rule[end_time.hour]:
+				count_after += 1
+		elif end_time.minute - start_time.minute >= rule[start_time.hour]:
+			count_after += 1
+
 	# reduce_rate = format((count_before - count_after) / count_before, '.2%')
 	reduce_rate = (count_before - count_after) / count_before
+	# print(count_before, count_after, reduce_rate )
 	return reduce_rate

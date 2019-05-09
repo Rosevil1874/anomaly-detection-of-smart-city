@@ -367,6 +367,10 @@ from FFT import anomaly_detection,daily_anomaly_corr_rate, hourly_anomaly_corr_r
 
 from alram_v2 import open_to_close_time, hourly_start_open_to_close_time, hourly_open_to_close_time, \
     unit_alarm_rules, alarm_reduce_rate
+from scipy.cluster.hierarchy import distance,linkage,dendrogram,fcluster
+from sklearn.cluster import DBSCAN
+from sklearn import metrics
+
 
 # 1. 计算每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件的时长
 # o_path = '../dataset/complete_units/'
@@ -410,14 +414,203 @@ from alram_v2 import open_to_close_time, hourly_start_open_to_close_time, hourly
 #     unit_alarm_rules(unit, o_path, d_path)
 
 
-# 5. 计算根据新的规则报警率下降情况
-# before_path = '../counts/hourly_open_to_close_time/'
-# after_path = '../counts/unit_alarm_rules/'
+# 合并规则：报警规则类似的设备使用同一套规则 TODO：优化合并规则代码
+o_path = '../counts/unit_alarm_rules/'
+d_path = '../counts/total_unit_alarm_rules.csv'
+cluster_path = '../alarm_rules/auto_clusters/'
+merged_path = '../alarm_rules/auto_merged/'
+# 将所有设备规则放入同一文件
+# units = os.listdir(o_path)
+# total_rules = pd.DataFrame(columns=['address', '0h', '1h', '2h', '3h', '4h', '5h', '6h',
+#                                     '7h', '8h', '9h', '10h', '11h', '12h', '13h', '14h',
+#                                     '15h', '16h', '17h', '18h', '19h', '20h', '21h', '22h', '23h'])
+# i = 0
+# for unit in units:
+#     path = o_path + unit
+#     o = open(path, 'rb')
+#     df = pd.read_csv(o)
+#     new_line = np.append(np.array([unit.split('.')[0]]), df['rules'].as_matrix())
+#     total_rules.loc[i] = new_line
+#     i += 1
+# csvFile = open(d_path, 'w')
+# total_rules.to_csv(d_path, index=None)
+#
+# # 画出聚类层次图
+# total_rules = pd.read_csv(d_path, index_col='address', encoding='gbk')
+# # disMat = distance.pdist(total_rules, metric = 'euclidean')
+# # Z=linkage(disMat, method='average') 						# 进行层次聚类:
+# # P=dendrogram( Z )											# 将层级聚类结果以树状图表示出来并保存
+# # plt.savefig( '../alarm_rules/plot_dendrogram.png')
+# #
+# # DBSCAN聚类
+# # 手肘法调参
+# eps_list = list(range(10, 1000, 10))
+# SC = []
+# for i in eps_list:
+#     db = DBSCAN(eps=i, min_samples=1).fit(total_rules)
+#     labels = db.labels_
+#     n_labels = len(set(labels))
+#     if n_labels == 1:
+#         break
+#     else:
+#         SC.append(metrics.silhouette_score(total_rules, labels))
+# best_eps = eps_list[np.argmax(SC)]
+# # print(SC)
+# # db = DBSCAN(eps=best_eps, min_samples=1).fit(total_rules)
+# db = DBSCAN(eps=best_eps, min_samples=1).fit(total_rules)
+# core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+# core_samples_mask[db.core_sample_indices_] = True
+# labels = db.labels_
+# k = len(set(labels))									# 聚类簇的数量
+# # print(labels)
+# #详细输出原始数据及其类别
+# if not os.path.exists(cluster_path + 'imgs/'):
+#     os.makedirs(cluster_path + 'imgs/')
+# if not os.path.exists(cluster_path + 'csv/'):
+#     os.makedirs(cluster_path + 'csv/')
+#
+# r = pd.concat([total_rules, pd.Series(labels, index = total_rules.index)], axis = 1)  #详细输出每个样本对应的类别
+# r.columns = list(total_rules.columns) + [u'聚类类别']              #重命名表头
+# plt.rcParams['font.sans-serif'] = ['SimHei']                #用来正常显示中文标签
+# plt.rcParams['axes.unicode_minus'] = False                  #用来正常显示负号
+# # style = ['ro-', 'go-', 'bo-', 'co-', 'mo-', 'yo-']
+# xlabels = ['0h', '1h', '2h', '3h', '4h', '5h', '6h','7h', '8h', '9h', '10h', '11h', '12h',
+#            '13h', '14h', '15h', '16h', '17h', '18h', '19h', '20h', '21h', '22h', '23h']
+# pic_output = cluster_path + 'imgs/type_'                 	#聚类图文件名前缀
+# for i in range(k):  #逐一作图，作出不同样式
+#     plt.figure()
+#     tmp = r[r[u'聚类类别'] == i].iloc[:,:24]                    #提取每一类除最后一列（label）的数据
+#     tmp.to_csv( cluster_path + 'csv/类别%s.csv' %(i) )     		#将每一类存成一个csv文件
+#     for j in range(len(tmp)):                                 #作图
+#         # plt.plot( range(1, 5), tmp.iloc[j], style[i - 1] )
+#         plt.plot( range(1, 25), tmp.iloc[j] )
+#         plt.xticks( range(1, 25), xlabels, rotation = 20 )         #坐标标签
+#         plt.title( u'门洞类别%s' % (i) )                         	#从1开始计数
+#         plt.subplots_adjust( bottom=0.15 )                        #调整底部
+#         plt.savefig( u'%s%s.png' % (pic_output, i) )            	#保存图片
+#
+# # 将每个类别中的规则合并成一个规则：对应每个小时取众数，若每个值出现次数一样则取中位数
+# classes_path = cluster_path + 'csv/'
+# classes = os.listdir(classes_path)
+# merged_cols = ['class', '0h', '1h', '2h', '3h', '4h', '5h', '6h', '7h', '8h', '9h', '10h', '11h',
+#                '12h',  '13h', '14h','15h', '16h', '17h', '18h', '19h', '20h', '21h', '22h', '23h' ]
+# merged_df = pd.DataFrame(columns=merged_cols)
+# i = 0
+# for c in classes:
+#     path = classes_path + c
+#     o = open(path, 'rb')
+#     df = pd.read_csv(o, encoding='gbk')
+#     new_line = []
+#     for col in merged_cols:
+#         if col == 'class':
+#             new_line.append(c.split('.')[0])
+#         else:
+#             rules = df[col].as_matrix()
+#             counts = np.bincount(rules)
+#             mode = np.argmax(counts)        # 众数
+#             if np.max(counts) == 1:
+#                 new_line.append(np.median(rules))   # 中位数
+#             else:
+#                 new_line.append(mode)
+#     merged_df.loc[i] = new_line
+#     i += 1
+# if not os.path.exists(merged_path):
+#     os.makedirs(merged_path)
+# csvFile = open(merged_path + 'merged_rules.csv', 'w')
+# # print(merged_df)
+# merged_df.to_csv(csvFile, index=None)
+#
+# 每个类别中包含的设备整理成一个文件
+# o_path = '../alarm_rules/auto_clusters/csv/'
+# d_path = '../alarm_rules/auto_merged/classes_to_devices.csv'
+# classes_list, devices_list = [], []
+# clusters = os.listdir(o_path)
+# for cluster in clusters:
+#     o = open(o_path + cluster, 'rb')
+#     df = pd.read_csv(o, encoding='gbk')
+#     classes_list.append(cluster.split('.')[0])
+#     devices_list.append(df['address'].as_matrix())
+# classes_dict = {}
+# classes_dict['class'] = classes_list
+# classes_dict['devices'] = devices_list
+# classes_dict = pd.DataFrame(classes_dict)
+# csvFile = open(d_path, 'w')
+# classes_dict.to_csv(d_path, index=None)
+
+# 画出合并后规则图像
+merged_rules_path = '../alarm_rules/merged/merged_rules.csv'
+auto_merged_rules_path = '../alarm_rules/auto_merged/merged_rules.csv'
+o1, o2 = open(merged_rules_path, 'rb'), open(auto_merged_rules_path, 'rb')
+merged_rules_df, auto_merged_rules_df = pd.read_csv(o1, index_col='class', encoding='gbk'), pd.read_csv(o2, index_col='class', encoding='gbk')
+
+# 手动调参结果
+# 总图
+# fig1, ax1 = plt.subplots(figsize=(16,9))
+# lines1 = []         # 保存图中每一条折线信息，便于添加图例
+# for c in merged_rules_df.index:
+#     line, = ax1.plot(merged_rules_df.columns, merged_rules_df.loc[c], label=c)
+#     lines1.append(line)
+# ax1.set_xlabel('时刻')
+# ax1.set_ylabel('超时时长上限')
+# plt.legend(lines1, merged_rules_df.index)
+# plt.show()
+# plt.savefig('../alarm_rules/merged/merged_rules.png')
+# plt.close(fig1)
+
+# 每类别独立图
+img_path = '../alarm_rules/merged/imgs/'
+if not os.path.exists(img_path):
+    os.makedirs(img_path)
+for c in merged_rules_df.index:
+    fig, ax = plt.subplots()
+    line, = ax.plot(merged_rules_df.columns, merged_rules_df.loc[c], label=c)
+    ax.axhline(y = 60, color = 'g', linestyle ='--')        # 添加y = 60的参考线
+    ax.set_xlabel('时刻')
+    ax.set_ylabel('超时时长上限')
+    plt.suptitle(c)
+    plt.ylim(0, 70)
+    plt.savefig( img_path + c + '.png')
+    plt.close(fig)
+
+# 自动调参结果
+# 总图
+# fig2, ax2 = plt.subplots(figsize=(16,9))
+# lines2 = []
+# for c in auto_merged_rules_df.index:
+#     print(c)
+#     line, = ax2.plot(auto_merged_rules_df.columns, auto_merged_rules_df.loc[c], label=c)
+#     lines2.append(line)
+# ax2.set_xlabel('时刻')
+# ax2.set_ylabel('超时时长上限')
+# plt.legend(lines2, auto_merged_rules_df.index)
+# plt.show()
+# plt.savefig('../alarm_rules/auto_merged/merged_rules.png')
+# plt.close(fig2)
+
+# 每类别独立图
+auto_img_path = '../alarm_rules/auto_merged/auto_imgs/'
+if not os.path.exists(auto_img_path):
+    os.makedirs(auto_img_path)
+for c in auto_merged_rules_df.index:
+    fig, ax = plt.subplots()
+    line, = ax.plot(auto_merged_rules_df.columns, auto_merged_rules_df.loc[c], label=c)
+    ax.axhline(y=60, color='g', linestyle='--')  # 添加y = 60的参考线
+    ax.set_xlabel('时刻')
+    ax.set_ylabel('超时时长上限')
+    plt.suptitle(c)
+    plt.ylim(0, 70)
+    plt.savefig( auto_img_path + c + '.png')
+    plt.close(fig)
+
+
+# 5. 计算根据新的规则报警率下降情况 TODO:在新数据上计算~
+# before_path = '../counts/open_to_close_time/'
+# rules_path = '../counts/unit_alarm_rules/'
 # d_path = '../counts/alarm_reduce_rate.csv'
 # df_result, i = pd.DataFrame(columns = ['address', 'reduce_rate']), 0
 # units = os.listdir(before_path)
 # for unit in units:
-#     reduce_rate = alarm_reduce_rate(unit, before_path, after_path)
+#     reduce_rate = alarm_reduce_rate(unit, before_path, rules_path)
 #     df_result.loc[i] = {'address': unit.split('.')[0], 'reduce_rate': reduce_rate}
 #     i += 1
 # csvFile = open(d_path, 'w')
