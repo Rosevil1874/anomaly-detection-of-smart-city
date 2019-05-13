@@ -48,46 +48,7 @@ def open_to_close_time(unit, o_path, d_path):
 	df_out.to_csv(new_path, index=None)
 
 
-# 计算设备超时事件在每个小时发生的次数和时长
-# 【
-# 	unit：单元设备地址；
-#  	o_path: 源数据路径；
-#  	d_path：结果存储的路径；
-#  】
-def hourly_start_open_to_close_time(unit, o_path, d_path):
-	path = o_path + unit
-	o = open(path, 'rb')
-	df = pd.read_csv(o, parse_dates=["start_time"], date_parser=dateparse2)
-
-	hours = [i for i in range(24)]
-	counts = [0]*24
-	durations = [[] for i in range(24)]
-	min_duration, max_duration = [0]*24, [0]*24
-
-	for idx in df.index:
-		start_time = df.loc[idx]['start_time']
-		hour_idx = start_time.hour
-		counts[ hour_idx ] += 1
-		durations[ hour_idx ].append(df.loc[idx]['duration'])
-		if len(durations[ hour_idx ]) != 0:
-			min_duration[ hour_idx ] = min(durations[ hour_idx ])
-			max_duration[ hour_idx ] = max(durations[ hour_idx ])
-
-	# for i in range(len(durations)):
-		# print(durations[i])
-	result = {}
-	result['hours'] = hours
-	result['counts'] = counts
-	result['durations'] = durations
-	result['min_duration'] = min_duration
-	result['max_duration'] = max_duration
-	result_df = pd.DataFrame(result)
-	temp = result_df.pop('hours')
-	result_df.insert(0, 'hours', temp)
-	result_df.to_csv(d_path + unit, index=None)
-
-
-# 根据异常检测结果提取出表现正常的每小时数据
+# 根据异常检测结果提取出表现正常的每小时数据;
 # 【
 # 	unit：单元设备地址；
 #  	anomalies_path: 异常数据路径；
@@ -168,17 +129,74 @@ def hourly_open_to_close_time(unit, anomalies_path, timeout_path, days_path, d_p
 	result_df.to_csv(d_path + unit, index=None, columns=columns)
 
 
+# 将小时数据结合成分时段数据(按作息习性分成8个时间段)
+def timeSlot_open_to_close_time(unit, o_path, d_path):
+	path = o_path + unit
+	o = open(path, 'rb')
+	timeout_df = pd.read_csv(o, encoding='gbk')
+
+	# 左闭右开区间
+	timeSlots = ['0-5', '5-7', '7-10', '10-11', '11-13', '13-17','17-20', '20-24']
+	durations = [0] * 8
+	counts = [float('-inf')] * 8
+
+	for idx in timeout_df.index:
+		hour = timeout_df.loc[idx]['hours']
+		count = timeout_df.loc[idx]['counts']
+		duration = timeout_df.loc[idx]['durations']
+		if hour >= 0 and hour <= 5:
+			durations[0] += duration
+			counts[0] = max(counts[0], count)   # 时段中超时事件发生的次数为时段中分小时发生超时事件次数的最大值
+		elif hour <= 7:
+			durations[1] += duration
+			counts[1] = max(counts[1], count)
+		elif hour <= 10:
+			durations[2] += duration
+			counts[2] = max(counts[2], count)
+		elif hour <= 11:
+			durations[3] += duration
+			counts[3] = max(counts[3], count)
+		elif hour <= 13:
+			durations[4] += duration
+			counts[4] = max(counts[4], count)
+		elif hour <= 17:
+			durations[5] += duration
+			counts[5] = max(counts[5], count)
+		elif hour <= 20:
+			durations[6] += duration
+			counts[6] = max(counts[6], count)
+		else:
+			durations[7] += duration
+			counts[7] = max(counts[7], count)
+
+	# 构造结果
+	result = {}
+	result['time_slot'] = timeSlots
+	result['counts'] = counts
+	result['durations'] = durations
+
+	counts = list(map(lambda x: 0 if x == float('-inf') else x, counts))
+	mean_durations = np.round(np.divide(durations, counts))
+	nan_index = np.isnan(mean_durations)
+	mean_durations[nan_index] = 0
+	result['mean_durations'] = mean_durations
+
+	result_df = pd.DataFrame(result)
+	columns = ['time_slot', 'counts', 'durations', 'mean_durations']
+	result_df.to_csv(d_path + unit, index=None, columns=columns)
+
+
 # 根据超时事件在每个小时发生的次数和时长为每个设备计算报警规则
 # 【
 # 	unit：单元设备地址；
 #  	o_path: 源数据路径；
 #  	d_path：结果存储的路径；
 #  】
-def unit_alarm_rules(unit, o_path, d_path):
+def timeSlot_unit_alarm_rules(unit, o_path, d_path):
 	path = o_path + unit
 	o = open(path, 'rb')
 	df = pd.read_csv(o)
-	rules = [0]*24
+	rules = [0]*8
 
 	for idx in df.index:
 		counts = df.loc[idx]['counts']
@@ -193,133 +211,10 @@ def unit_alarm_rules(unit, o_path, d_path):
 			else:
 				rules[idx] = int( (mean_duration // 5 + 1)*5 )
 
+	columns = ['time_slot', 'rules']
+	timeSlots = ['0-5', '5-7', '7-10', '10-11', '11-13', '13-17', '17-20', '20-24']
 	rules_df = {}
-	rules_df['hours'] = [i for i in range(24)]
+	rules_df['time_slot'] = timeSlots
 	rules_df['rules'] = rules
 	rules_df = pd.DataFrame(rules_df)
-	rules_df.to_csv(d_path + unit, index=None)
-
-# 计算根据新的规则报警率下降情况(分时段)
-# 【
-# 	unit：单元设备地址；
-#  	before_path: 原超时报警数据路径；
-#  	df_rules：新报警规则；
-#  	df_classes: 设备的类别；
-#  】
-# return: 每个设备运用新规则后报警降低率
-def timeSlot_alarm_reduce_rate(unit, before_path, df_rules, df_classes):
-	before = before_path + unit
-	o = open(before, 'rb')
-	df_before = pd.read_csv(o, parse_dates=['start_time', 'end_time'], date_parser=dateparse2)
-
-	# 若没有超时发生，返回0
-	count_before = len(df_before)
-	if count_before == 0:
-		return 0
-
-	# 找出设备所属类别
-	the_class = ''
-	classes = df_classes['class'].as_matrix()
-	devices = df_classes['devices'].as_matrix()
-	for i in range(len(devices)):
-		if unit.split('.')[0] in devices[i]:
-			the_class = classes[i]
-			break
-
-	# 找出类别对应规则
-	if the_class == '无超时':
-		rule = [5, 5, 5, 5, 5, 5, 5, 5]
-	else:
-		rule = df_rules.loc[the_class].as_matrix()
-	# print(the_class, rule)
-
-	count_after = 0
-	for idx in df_before.index:
-		duration = df_before.loc[idx]['duration']
-		start_time, end_time = df_before.loc[idx]['start_time'], df_before.loc[idx]['end_time']
-		start_hour, end_hour = start_time.hour, end_time.hour
-
-		# 计算超时事件每一个小时的分布
-		durations = [0]*24
-		delta = end_time - start_time
-		delta = int(np.ceil(delta.total_seconds() / 60 / 60))  # timedelta化成小时为单位
-		for i in range(delta):
-			if i == 0:
-				if start_hour == end_hour:
-					diff = end_time.minute - start_time.minute
-					durations[start_hour] += diff
-				else:
-					durations[start_hour] += start_time.minute
-			elif i == delta - 1:
-				durations[start_hour] += end_time.minute
-			else:
-				durations[start_hour] += 60
-			start_time += timedelta(hours=1)
-
-		# 计算每个时段的超时时长
-		timeSlot_durations = [sum(durations[:6]), sum(durations[6:8]), sum(durations[8:11]),sum(durations[11:12]),
-							  sum(durations[12:14]),sum(durations[14:18]),sum(durations[18:21]),sum(durations[21:])]
-		# print(timeSlot_durations, rule)
-		for i in range(8):
-			if timeSlot_durations[i] >= rule[i]:
-				count_after += 1
-				break
-
-	# reduce_rate = format((count_before - count_after) / count_before, '.2%')
-	reduce_rate = (count_before - count_after) / count_before
-	# print(count_before, count_after, reduce_rate )
-	return reduce_rate
-
-
-# 计算根据新的规则报警率下降情况(分小时)
-# 【
-# 	unit：单元设备地址；
-#  	before_path: 原超时报警数据路径；
-#  	df_rules：新报警规则；
-#  	df_classes: 设备的类别；
-#  】
-# return: 每个设备运用新规则后报警降低率
-def alarm_reduce_rate(unit, before_path, df_rules, df_classes):
-	before = before_path + unit
-	o = open(before, 'rb')
-	df_before = pd.read_csv(o, parse_dates=['start_time', 'end_time'], date_parser=dateparse2)
-
-	# 若没有超时发生，返回0
-	count_before = len(df_before)
-	if count_before == 0:
-		return 0
-
-	# 找出设备所属类别
-	the_class = ''
-	classes = df_classes['class'].as_matrix()
-	devices = df_classes['devices'].as_matrix()
-	for i in range(len(devices)):
-		if unit.split('.')[0] in devices[i]:
-			the_class = classes[i]
-			break
-
-	# 找出类别对应规则
-	rule = df_rules.loc[the_class].as_matrix()
-	# print(the_class, rule)
-
-	count_after = 0
-	for idx in df_before.index:
-		duration = df_before.loc[idx]['duration']
-
-		# 大于1小时的情况都会报警
-		if duration >= 1:
-			count_after += 1
-			continue
-
-		# 判断小于一小时的情况有没有超出规则中的时长（规则中的单位为分钟），最多跨两个不同的时刻
-		start_time, end_time = df_before.loc[idx]['start_time'], df_before.loc[idx]['end_time']
-		if start_time.hour < end_time.hour:
-			if 60 - start_time.minute >= rule[start_time.hour] or end_time.minute >= rule[end_time.hour]:
-				count_after += 1
-		elif end_time.minute - start_time.minute >= rule[start_time.hour]:
-			count_after += 1
-
-	# reduce_rate = format((count_before - count_after) / count_before, '.2%')
-	reduce_rate = (count_before - count_after) / count_before
-	# print(count_before, count_after, reduce_rate )
-	return reduce_rate
+	rules_df.to_csv(d_path + unit, columns=columns, index=None)

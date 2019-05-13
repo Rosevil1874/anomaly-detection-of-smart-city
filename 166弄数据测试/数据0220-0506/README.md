@@ -17,6 +17,7 @@ main.py：主函数。
 
 **超时告警下降率**：
 alram_reduce_rate.py：根据新制定的超时告警规则，计算告警下降率。
+alram_v3.py：分时段处理超时数据，参考前一批数据。
 
 
 ## 文件目录
@@ -29,7 +30,8 @@ alram_reduce_rate.py：根据新制定的超时告警规则，计算告警下降
 3. counts: 数据统计计算
 	- open_to_close_time：每个设备“正常开门4-超时未关门报警6-开门状态0-报警解除7”事件（超时事件）的开始时间、结束事件、时长；
 
-8. alarm_rules
+**加了timeSlot前缀的是相应使用分时段处理的数据。**
+4. alarm_rules
 	- merged：手动调参聚类结果进行合并后的规则；
 	- auto_merged: 自动调参聚类结果进行合并后的规则；
 	- alarm_reduce_rate.csv：手动调参规则告警下降率；

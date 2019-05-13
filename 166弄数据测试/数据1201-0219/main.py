@@ -558,19 +558,19 @@ merged_rules_df, auto_merged_rules_df = pd.read_csv(o1, index_col='class', encod
 # plt.close(fig1)
 
 # 每类别独立图
-img_path = '../alarm_rules/merged/imgs/'
-if not os.path.exists(img_path):
-    os.makedirs(img_path)
-for c in merged_rules_df.index:
-    fig, ax = plt.subplots()
-    line, = ax.plot(merged_rules_df.columns, merged_rules_df.loc[c], label=c)
-    ax.axhline(y = 60, color = 'g', linestyle ='--')        # 添加y = 60的参考线
-    ax.set_xlabel('时刻')
-    ax.set_ylabel('超时时长上限')
-    plt.suptitle(c)
-    plt.ylim(0, 70)
-    plt.savefig( img_path + c + '.png')
-    plt.close(fig)
+# img_path = '../alarm_rules/merged/imgs/'
+# if not os.path.exists(img_path):
+#     os.makedirs(img_path)
+# for c in merged_rules_df.index:
+#     fig, ax = plt.subplots()
+#     line, = ax.plot(merged_rules_df.columns, merged_rules_df.loc[c], label=c)
+#     ax.axhline(y = 60, color = 'g', linestyle ='--')        # 添加y = 60的参考线
+#     ax.set_xlabel('时刻')
+#     ax.set_ylabel('超时时长上限')
+#     plt.suptitle(c)
+#     plt.ylim(0, 70)
+#     plt.savefig( img_path + c + '.png')
+#     plt.close(fig)
 
 # 自动调参结果
 # 总图
@@ -588,31 +588,17 @@ for c in merged_rules_df.index:
 # plt.close(fig2)
 
 # 每类别独立图
-auto_img_path = '../alarm_rules/auto_merged/auto_imgs/'
-if not os.path.exists(auto_img_path):
-    os.makedirs(auto_img_path)
-for c in auto_merged_rules_df.index:
-    fig, ax = plt.subplots()
-    line, = ax.plot(auto_merged_rules_df.columns, auto_merged_rules_df.loc[c], label=c)
-    ax.axhline(y=60, color='g', linestyle='--')  # 添加y = 60的参考线
-    ax.set_xlabel('时刻')
-    ax.set_ylabel('超时时长上限')
-    plt.suptitle(c)
-    plt.ylim(0, 70)
-    plt.savefig( auto_img_path + c + '.png')
-    plt.close(fig)
+# auto_img_path = '../alarm_rules/auto_merged/auto_imgs/'
+# if not os.path.exists(auto_img_path):
+#     os.makedirs(auto_img_path)
+# for c in auto_merged_rules_df.index:
+#     fig, ax = plt.subplots()
+#     line, = ax.plot(auto_merged_rules_df.columns, auto_merged_rules_df.loc[c], label=c)
+#     ax.axhline(y=60, color='g', linestyle='--')  # 添加y = 60的参考线
+#     ax.set_xlabel('时刻')
+#     ax.set_ylabel('超时时长上限')
+#     plt.suptitle(c)
+#     plt.ylim(0, 70)
+#     plt.savefig( auto_img_path + c + '.png')
+#     plt.close(fig)
 
-
-# 5. 计算根据新的规则报警率下降情况 TODO:在新数据上计算~
-# before_path = '../counts/open_to_close_time/'
-# rules_path = '../counts/unit_alarm_rules/'
-# d_path = '../counts/alarm_reduce_rate.csv'
-# df_result, i = pd.DataFrame(columns = ['address', 'reduce_rate']), 0
-# units = os.listdir(before_path)
-# for unit in units:
-#     reduce_rate = alarm_reduce_rate(unit, before_path, rules_path)
-#     df_result.loc[i] = {'address': unit.split('.')[0], 'reduce_rate': reduce_rate}
-#     i += 1
-# csvFile = open(d_path, 'w')
-# df_result.to_csv(d_path, index=None)
-# print('mean reduce rate:', df_result['reduce_rate'].mean())
